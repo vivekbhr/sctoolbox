@@ -109,3 +109,45 @@ sanitizeGeneID <- function(geneIDs) {
   return(g)
 }
 
+
+#' convert char to GRanges
+#'
+#' @param char "chr_start_end"
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
+charToGRanges <- function(char) {
+  chrom <- gsub("(.*)_([0-9]*)_([0-9]*)", "\\1", char)
+  start <- gsub("(.*)_([0-9]*)_([0-9]*)", "\\2", char)
+  end <- gsub("(.*)_([0-9]*)_([0-9]*)", "\\3", char)
+  GenomicRanges::GRanges(chrom, IRanges::IRanges(as.numeric(start), as.numeric(end)))
+}
+
+
+#' prepare .txt file to create pseudobulk bigwigs from clustered UMAP (using snakemake workflow)
+#'
+#' @param umap umap data frame, from standard LSA/LDA wrapper
+#' @param prefix file name prefix (match it with bam file prefix to run snakemake afterwards)
+#' @param suffix file name suffix (match it with bam file suffix to run snakemake afterwards)
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
+#'
+prepForPseudobulk <- function(umap, prefix, suffix = ".txt") {
+  umap$plate <- gsub("(.*)_([ATGC]*)", "\\2", rownames(umap))
+
+  lapply(unique(umap$plate), function(x){
+    df <- umap %>% rownames_to_column("cell") %>% as_tibble() %>% filter(plate == x) %>%
+      mutate(cell = gsub("(.*)_([ATGC]*)", "\\2", cell)) %>% dplyr::select(cell, louvain)
+    write.table(df, file = paste0(prefix, x, suffix), sep = "\t",
+                quote = F, col.names = F, row.names = F)
+
+    })
+
+}

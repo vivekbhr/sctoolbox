@@ -1,10 +1,10 @@
 #' filter Reads based on nucleotide content at 5-prime
 #'
 #' @param bamdf bam file as data frame
-#' @param pos_strand_expected
-#' @param neg_strand_expected
-#' @param plotFile
-#' @param bsgenome
+#' @param pos_strand_expected expected Nucleoties in read and genome for alignments in + strand c("A", "AT")
+#' @param neg_strand_expected expected Nucleoties in read and genome for alignments in - strand c("A", "AT")
+#' @param plotFile file to save the plot of nucleotide content
+#' @param bsgenome a BSgenome object
 #'
 #' @return
 #' @export
@@ -102,4 +102,76 @@ get5pNucCounts <- function(bamfile,
   }, mc.cores=20)
 
   return(bcCounts)
+}
+
+## get fragment length by looking at +/- strand
+getFragLen <- function(x, bam, regions = NA){
+  bfreads <- readGAlignments(bam,param=ScanBamParam(tag = "BC", tagFilter = list("BC" = x)) )
+  if(!is.na(regions)) {
+    bfreads %<>% subsetByOverlaps(ctcf)
+  }
+  bfreads %<>% split(strand(bfreads))
+  bfreads %<>% lapply(GRanges)
+  bfreads$`+` %<>% resize(1)
+  bfreads$`-` %<>% resize(1, fix="end")
+  distanceToNearest(bfreads$`+`, bfreads$`-`, ignore.strand = TRUE) %>%
+    as.data.frame() -> d
+  return(d[d$distance <= 1000, "distance"])
+
+}
+
+## bin the fragment lengths vector
+binFragLen <- function(x, bc){
+  names(x) <- bc
+  x %<>% plyr::ldply(data.frame)
+  colnames(x) <- c("barcodes", "hist")
+  ## define breaks
+  breaks = seq(0, 1000, 5)
+  x$group_tags <- cut(x$hist,
+                      breaks=breaks,
+                      include.lowest=TRUE,
+                      right=FALSE)
+
+  x %<>% dplyr::group_by(barcodes, group_tags) %>% dplyr::summarise(n = n())
+  return(x)
+}
+
+
+#' Get bistance between R1-cuts on opposite strand per cell
+#'
+#' @param bam BAM file
+#' @param barcodes barcodes (chr vector)
+#' @param subsetRegions GRanges to subset to (if needed)
+#' @param nCores Int, No. of cores
+#' @param linePlot chr, name of line plot
+#' @param heatmap chr, name of heatmap
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
+getDistanceBetweenCuts <- function(bam, barcodes, subsetRegions = NA, nCores = 2,
+                                   linePlot = "fragSizes_from_scCuts.png",
+                                   heatmap = "fragSizes_from_scCuts_heatmap.png") {
+
+  read_dists <- parallel::mclapply(barcodes, getFragLen, bam = bam, regions = subsetRegions, mc.cores = nCores)
+  read_dists_df <- binFragLen(read_dists, barcodes)
+  if(!is.na(linePlot)) {
+    p1 <- ggplot(read_dists_df$i1, aes(group_tags, n, col = barcodes, group = barcodes)) + geom_line() + theme(legend.position = "none")
+    ggsave(filename = linePlot, plot = p1)
+  }
+
+  read_dists_df %<>% as.data.frame()
+  ## heatmap
+  hmdf <- tidyr::spread(read_dists_df, group_tags, n) %>% as.data.frame() %>% dplyr::select(-barcodes) %>% as.matrix()
+  hmdf[is.na(hmdf)] <- 0
+  colnames(hmdf) %<>% gsub("\\[|\\|\\])", "", .) %>% gsub(",", "-", .) %>% paste0("bin_", .)
+
+  if(!is.na(heatmap)) {
+    pheatmap::pheatmap(hmdf[rev(order(rowMeans(hmdf))),], cluster_cols = FALSE,
+                       cluster_rows = FALSE, scale = "row", color = rainbow(50), filename = heatmap)
+  }
+  return(read_dists_df)
+
 }

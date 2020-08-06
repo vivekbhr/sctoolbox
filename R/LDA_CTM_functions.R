@@ -237,10 +237,10 @@ countFilter <- function(counts, minGeneCount = 0, maxGeneCount = Inf,
                maxGeneCount, " : ", length(genes_tokeep)))
 
   # make a histogram with filter thresholds
-  pl1 <- ggplot(gene_sums, aes(counts)) + geom_histogram() + scale_x_log10()
-    #geom_vline(minGeneCount) + geom_vline(maxGeneCount)
-  pl2 <- ggplot(cell_sums, aes(counts)) + geom_histogram() + scale_x_log10()
-    #geom_vline(minCellCount)
+  pl1 <- ggplot(gene_sums, aes(counts)) + geom_histogram() + scale_x_log10() +
+    labs(x = "Total counts across cells", y = "nGenes")
+  pl2 <- ggplot(cell_sums, aes(counts)) + geom_histogram() + scale_x_log10() +
+         labs(x = "Total counts across regions", y = "nCells") #+ geom_vline(minCellCount)
   print(gridExtra::grid.arrange(pl1, pl2))
 
   counts %<>% dplyr::filter(gene %in% genes_tokeep)
@@ -257,11 +257,11 @@ countFilter <- function(counts, minGeneCount = 0, maxGeneCount = Inf,
 
     # make a histogram with filter thresholds
     pl1 <- ggplot(p1, aes(counts)) + geom_histogram() + scale_x_log10() +
-      labs(x = "Total No. of genes detected", y = "nCells")
-      #geom_vline(minGenes)
+      labs(x = "Total No. of regions detected", y = "nCells") #+
+      #geom_vline(minGenesForCells)
     pl2 <- ggplot(p2, aes(counts)) + geom_histogram() + scale_x_log10() +
-      labs(x = "Total No. of cells detected", y = "nGenes")
-      #geom_vline(minCells)
+      labs(x = "Total No. of cells detected", y = "nGenes") #+
+      #geom_vline(minCellsForGenes)
     print(gridExtra::grid.arrange(pl1, pl2))
 
     counts %<>% dplyr::filter(cell %in% keep$cells$cell, gene %in% keep$genes$gene)

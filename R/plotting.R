@@ -22,3 +22,22 @@ plotMarker <- function(umap, count_df, geneID, title) {
     labs(col = "Louvain", fill = "Counts", title = title) +
     scale_fill_gradient2(low = "grey90", mid = "grey60", high = "black", na.value = "white")
 }
+
+
+#' Regions detected as a function of counts
+#'
+#' @param matrix A region * cell matrix of counts
+#'
+#' @return ggplot object
+#' @export
+#'
+#' @examples
+#'
+#'
+regionDetectionPlot <- function(mat) {
+  tc <- colSums(mat)
+  tcy <- colSums(mat > 0)
+  plot(tc, tcy, log = "xy", xlab = "log(total Counts)", ylab = "log(No. of regions with non-zero counts)")
+}
+
+
