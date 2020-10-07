@@ -119,6 +119,7 @@ sanitizeGeneID <- function(geneIDs) {
 #'
 #' @examples
 #'
+
 charToGRanges <- function(char) {
   chrom <- gsub("(.*)_([0-9]*)_([0-9]*)", "\\1", char)
   start <- gsub("(.*)_([0-9]*)_([0-9]*)", "\\2", char)
