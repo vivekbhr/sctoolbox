@@ -4,7 +4,7 @@
 \alias{monocleDNAworkflow}
 \title{Monocle ATAC/DNA workflow}
 \usage{
-monocleDNAworkflow(counts)
+monocleDNAworkflow(counts, nDim = 20)
 }
 \arguments{
 \item{counts}{matrix: either wide (regions*cells) or tidy (regions, cell, count) format}

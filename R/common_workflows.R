@@ -12,14 +12,14 @@
 #'
 #'
 
-monocleDNAworkflow <- function(counts) {
+monocleDNAworkflow <- function(counts, nDim=20) {
   ## make CDS
   cds <- cicero::make_atac_cds(counts, binarize = TRUE)
   ## cluster
   set.seed(2017)
   cds %<>% monocle3::detect_genes()
   cds %<>% monocle3::estimate_size_factors()
-  cds %<>% monocle3::preprocess_cds(method = "LSI", num_dim = 20)
+  cds %<>% monocle3::preprocess_cds(method = "LSI", num_dim = nDim)
   cds %<>% monocle3::reduce_dimension(reduction_method = 'UMAP', preprocess_method = "LSI")
 
   ## PAGA and graph learning
@@ -58,3 +58,44 @@ seuratWorkflow <- function(counts) {
 
   return(seu)
 }
+
+
+#' vivekbhr's workflow for LSA and annotation
+#'
+#' @param binCounts_filt Filtered counts in genomic bins (rows = regions, columns = cells)
+#' @param genes_gr GenomicRanges with gene names and their locations.
+#' @param qc_df (optional) DataFrame with per-cell quality control (or other) information
+#'
+#' @return Annotated LSA object (as list)
+#' @export
+#'
+#' @examples
+#'
+
+lsaWorkflowVB <- function(binCounts_filt, genes_gr, qc_df=NA) {
+
+  ## Run LSA
+  filt_lsa <- lsa_wrapper(binCounts_filt, nPC = 30, nK = 20, outPdf = NA)
+  filt_lsa$umap$totalCount <- colSums(binCounts_filt)
+  if(!(is.na(qc_df))) {
+    filt_lsa$umap <- qc_df %>% mutate(id = paste(sample, bc, sep ="_")) %>% merge(filt_lsa$umap, ., by.x=0, by.y="id")
+  }
+
+  # plot
+  ggplot(filt_lsa$umap, aes(UMAP1, UMAP2, color = factor(louvain))) + geom_point() +
+    scale_color_brewer(palette = "Paired") + labs(color = "Cluster")
+
+  ## Get top genes per cluster
+  topGenes <- topGenesByCluster(data.frame(cells = filt_lsa$umap$Row.names,
+                                           cluster = filt_lsa$umap$louvain),
+                                binCounts_filt, n = 50)
+  topGenes %<>% lapply(charToGRanges) %>% lapply(function(x) subsetByOverlaps(genes_gr, x))
+  topGenes_names <- topGenes %>% lapply(function(x) return(x$gene_id)) %>% lapply(sanitizeGeneID) %>%
+    lapply(function(x) gene_to_symbol[match(x, gene_to_symbol$ensembl_gene_id), "external_gene_name"])
+
+  ## return the list object
+  filt_lsa$topGenes <- topGenes
+  filt_lsa$topGenes_names <- topGenes_names
+  return(filt_lsa)
+}
+
