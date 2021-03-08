@@ -24,7 +24,7 @@ plotMarker <- function(umap, count_df, geneID, title) {
 }
 
 
-#' Regions detected as a function of counts
+#' Plot no. of regions detected as a function of counts
 #'
 #' @param matrix A region * cell matrix of counts
 #'
@@ -34,10 +34,83 @@ plotMarker <- function(umap, count_df, geneID, title) {
 #' @examples
 #'
 #'
-regionDetectionPlot <- function(mat) {
+plotRegionDetection <- function(mat) {
   tc <- colSums(mat)
   tcy <- colSums(mat > 0)
   plot(tc, tcy, log = "xy", xlab = "log(total Counts)", ylab = "log(No. of regions with non-zero counts)")
 }
+
+
+#' Plot variance explained for a PC matrix
+#'
+#' @param matrix N*PC matrix
+#'
+#' @return ggplot object
+#' @export
+#'
+#' @examples
+#'
+#'
+plotVarExplained <- function(mat) {
+  v <- data.frame(apply(mat, 2, var)/sum(apply(mat, 2, var)))
+  colnames(v) <- "VarExplained"
+  if(is.null(colnames(mat))) {
+    names <- paste0("PC_", 1:nrow(v))
+  } else {
+    names <- rownames(v)
+  }
+  v$PC <- factor(names, levels = names)
+
+  ggplot(v, aes(PC, VarExplained, group=1)) + geom_point(size=3) + geom_line()
+
+}
+
+
+#' Plot numeric information on a 384-well plate layout
+#'
+#' @param barcodeFile File with barcodes arranged in order: 1-384
+#' @param bcInfo Data frame with row.names=barcodes (matching barcodeFile) and columns with
+#'               values to plot (eg. total counts)
+#' @param varToPlot Which column of bcInfo to plot
+#' @param groupInfo (optional) list which highlights certain wells. This can be used to provide
+#'                  well grouping information. For example, if last 4 columns of a plate contain
+#'                  control samples, or if last 8 corner wells are left empty etc. The list should
+#'                  contain 3 values row (top to bottom, numeric), col (left to right, numeric), and
+#'                  group (character/factor).
+#'
+#' @return Plate plot (ggplot object)
+#' @export
+#'
+#' @examples
+#'
+#'
+
+plotPlateLayout <- function(barcodeFile, bcInfo, varToPlot="count", groupInfo=NA) {
+
+  bc <- read.delim(barcodeFile, header= F, stringsAsFactors = F)$V1
+  ## prep a data frame with plate layout and matching barcodes
+  g <- expand.grid(x = LETTERS[1:16], y = 1:24)
+  g$n <- rep(0:15, 24)
+  g$idx <- 24*g$n + g$y
+  g$bc <- bc[g$idx]
+  g$y <- as.factor(g$y)
+  g$x <- as.factor(g$x)
+  g$x <- with(g, factor(x, levels = rev(levels(x))))
+
+  ## plot
+  warning("Not yet fully implemented!")
+  ggplot(g, aes(y, x, fill = idx)) +
+    geom_tile() + ggtitle(label = y) +
+    scale_fill_viridis_c() +
+    theme_bw(base_size = 16) +
+    labs(x="", y="", fill=varToPlot)
+
+  ## map the groupInfo into this plot
+#  if(!(is.na(groupInfo))) {
+#    vals <- t(vapply(gr$rows, function(x) (24*(x-1))+gr$cols, numeric(3L)))
+#    frame <- g[g$idx %in% vals, ]
+#  }
+
+  }
 
 
