@@ -12,9 +12,13 @@
 #'
 #'
 
-monocleDNAworkflow <- function(counts, nDim=20) {
-  ## make CDS
-  cds <- cicero::make_atac_cds(counts, binarize = TRUE)
+monocleDNAworkflow <- function(counts, nDim=20, binary=FALSE) {
+  if(class(counts) == "cell_data_set") {
+    cds <- counts
+  } else {
+    ## make CDS
+    cds <- cicero::make_atac_cds(counts, binarize = binary)
+  }
   ## cluster
   set.seed(2017)
   cds %<>% monocle3::detect_genes()
