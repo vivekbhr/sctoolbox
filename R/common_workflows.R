@@ -69,6 +69,7 @@ seuratWorkflow <- function(counts) {
 #' @param binCounts_filt Filtered counts in genomic bins (rows = regions, columns = cells)
 #' @param genes_gr GenomicRanges with gene names and their locations.
 #' @param qc_df (optional) DataFrame with per-cell quality control (or other) information
+#' @param gene_symbol data frame with ensembl gene ID and corresponding symbol (from biomart)
 #'
 #' @return Annotated LSA object (as list)
 #' @export
@@ -76,13 +77,15 @@ seuratWorkflow <- function(counts) {
 #' @examples
 #'
 
-lsaWorkflowVB <- function(binCounts_filt, genes_gr, qc_df=NA) {
+lsaWorkflowVB <- function(binCounts_filt, genes_gr, qc_df=NA, gene_symbols=NA) {
 
   ## Run LSA
   filt_lsa <- lsa_wrapper(binCounts_filt, nPC = 30, nK = 20, outPdf = NA)
   filt_lsa$umap$totalCount <- colSums(binCounts_filt)
   if(!(is.na(qc_df))) {
     filt_lsa$umap <- qc_df %>% mutate(id = paste(sample, bc, sep ="_")) %>% merge(filt_lsa$umap, ., by.x=0, by.y="id")
+  } else {
+    filt_lsa$umap$Row.names <- rownames(filt_lsa$umap)
   }
 
   # plot
@@ -95,7 +98,7 @@ lsaWorkflowVB <- function(binCounts_filt, genes_gr, qc_df=NA) {
                                 binCounts_filt, n = 50)
   topGenes %<>% lapply(charToGRanges) %>% lapply(function(x) subsetByOverlaps(genes_gr, x))
   topGenes_names <- topGenes %>% lapply(function(x) return(x$gene_id)) %>% lapply(sanitizeGeneID) %>%
-    lapply(function(x) gene_to_symbol[match(x, gene_to_symbol$ensembl_gene_id), "external_gene_name"])
+    lapply(function(x)  gene_symbols[match(x,  gene_symbols$ensembl_gene_id), "external_gene_name"])
 
   ## return the list object
   filt_lsa$topGenes <- topGenes

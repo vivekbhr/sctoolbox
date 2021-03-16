@@ -4,7 +4,7 @@
 \alias{lsaWorkflowVB}
 \title{vivekbhr's workflow for LSA and annotation}
 \usage{
-lsaWorkflowVB(binCounts_filt, genes_gr, qc_df = NA)
+lsaWorkflowVB(binCounts_filt, genes_gr, qc_df = NA, gene_symbols = NA)
 }
 \arguments{
 \item{binCounts_filt}{Filtered counts in genomic bins (rows = regions, columns = cells)}
@@ -12,6 +12,8 @@ lsaWorkflowVB(binCounts_filt, genes_gr, qc_df = NA)
 \item{genes_gr}{GenomicRanges with gene names and their locations.}
 
 \item{qc_df}{(optional) DataFrame with per-cell quality control (or other) information}
+
+\item{gene_symbol}{data frame with ensembl gene ID and corresponding symbol (from biomart)}
 }
 \value{
 Annotated LSA object (as list)
