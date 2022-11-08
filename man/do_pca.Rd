@@ -17,6 +17,3 @@ PCA output matrix
 \description{
 Run fast PCA (irlba) on TF-IDF matrix
 }
-\examples{
-
-}

@@ -21,7 +21,3 @@ ggplot objects
 \description{
 Plot the counts for gene lists to compare bw clusters
 }
-\examples{
-
-
-}

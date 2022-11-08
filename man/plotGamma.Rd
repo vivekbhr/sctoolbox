@@ -15,6 +15,3 @@ ggplot object
 \description{
 Plot the topic to document/cell (gamma) distribution from LDA/CTM output
 }
-\examples{
-
-}

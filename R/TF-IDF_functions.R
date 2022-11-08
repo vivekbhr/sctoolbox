@@ -29,7 +29,10 @@ tfidf = function(bmat, frequencies=TRUE, log_scale_tf=TRUE, scale_factor=100000,
     # "raw count" method
     tf = bmat
   }
-
+  # check/convert the tf to sparse matrix
+  if(class(tf) == "matrix" | attr(class(tf), "package") != "Matrix") {
+    tf <- Matrix::Matrix(tf, sparse = TRUE)
+  }
   # Either TF method can optionally be log scaled
   if (log_scale_tf) {
     if (frequencies) {

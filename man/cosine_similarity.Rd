@@ -15,6 +15,3 @@ cells*cells matrix
 \description{
 calculate cell*cell cosine similarity
 }
-\examples{
-
-}

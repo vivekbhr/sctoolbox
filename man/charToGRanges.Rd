@@ -9,12 +9,6 @@ charToGRanges(char)
 \arguments{
 \item{char}{"chr_start_end"}
 }
-\value{
-
-}
 \description{
 convert char to GRanges
-}
-\examples{
-
 }

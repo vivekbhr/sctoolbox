@@ -21,6 +21,3 @@ Annotated LSA object (as list)
 \description{
 vivekbhr's workflow for LSA and annotation
 }
-\examples{
-
-}

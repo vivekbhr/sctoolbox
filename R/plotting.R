@@ -114,3 +114,64 @@ plotPlateLayout <- function(barcodeFile, bcInfo, varToPlot="count", groupInfo=NA
   }
 
 
+#' Plot multiple UMAPs in the same plot where the points (cells) are connectec
+#'
+#' For example tChIC data with ChIC + RNA UMAP
+#'
+#' @param umaps names list of data.frames with columns (UMAP1, UMAP2) and cell IDs in rownames.
+#' @param color_by Column ID to color the UMAP by
+#' @param center_grp Name of the list element to use as "center" of the joint UMAP
+#' @param match_df In case cellIDs are not matched with themselves, provide a dataframe with source->target cell matchings.
+#'                 NOTE: this only works for 2 modalities, columns of the data. frame must be named "source" and "target"
+#'
+#'
+#' @return ggplot2 object
+#' @export
+#'
+#' @examples
+#'
+#'
+plotMultiUMAP <- function(umaps, color_by='annotation', center_grp= 'rna', color_lines=TRUE, match_df=NA) {
+
+  umap_merge <- plyr::ldply(umaps, function(x) as.data.frame(x) %>% tibble::rownames_to_column("cellID"))
+
+  ## update the position of other plots w.r.t center
+  crange <- range(umap_merge[umap_merge$.id == center_grp, 'UMAP1'])
+  padding = max(abs(crange)) * (40/100) # 40% padding
+  modes = setdiff(unique(umap_merge$.id), center_grp)
+
+  for(i in 1:length(modes)) {
+    m = i+1
+    if(i %% 2 == 0) {
+      # 2,4,6.. : add coords to the left
+      to_subtract = (m*min(crange)) - padding# -ve number
+      umap_merge[umap_merge$.id == modes[i], "UMAP1"] %<>% add(to_subtract)
+
+    } else {
+      # 1,3,5.. :add coords to the right
+      to_add = (m*max(crange)) + padding
+      umap_merge[umap_merge$.id == modes[i], "UMAP1"] %<>% add(to_add)
+    }
+    i = m
+  }
+
+  # plot
+  p <- ggplot(umap_merge, aes_string('UMAP1', 'UMAP2', fill=color_by)) +
+    theme_minimal(base_size = 14)
+  if(!(is.na(match_df))) {
+    rownames(umap_merge) <- umap_merge$cellID
+    umap_merge[match_df$source, 'cellID'] <- match_df$target
+  }
+ if(isTRUE(color_lines)) {
+     p <- p %+% geom_line(aes_string(group = 'cellID', color=color_by), size=0.5, alpha=0.05)
+   } else {
+     p <- p %+% geom_line(aes_string(group = 'cellID'), size=0.5, alpha=0.05, color='grey')
+   }
+
+  p %+% geom_point(size=1.5, pch=21) +
+    scale_fill_manual(values = get_colors(umap_merge[[color_by]])) +
+    theme(legend.position = "top", axis.text.x = element_blank(),
+          axis.ticks = element_line(linetype = "solid" )) +
+    guides(fill = guide_legend(title.position = "top"), color = "none") + NULL
+
+}

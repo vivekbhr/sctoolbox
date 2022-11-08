@@ -23,7 +23,3 @@ igraph objet
 \description{
 Convert a cellxPC or a cellxTopic matrix to a KNN matrix
 }
-\examples{
-
-
-}

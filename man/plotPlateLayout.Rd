@@ -26,7 +26,3 @@ Plate plot (ggplot object)
 \description{
 Plot numeric information on a 384-well plate layout
 }
-\examples{
-
-
-}

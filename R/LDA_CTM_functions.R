@@ -218,6 +218,7 @@ ldaWrapper <- function(geneCounts, binarize = FALSE, nTopic = 20, nK = 30) {
 #' @param minGenesForCells to filter cells, min number of genes with nonzero counts
 #'
 #' @return a list, with filtered geneCounts in tibble (cell,gene, count), and wide matrix (genes*cells)
+#' @import ggplot2 magrittr
 #' @export
 #'
 #' @examples

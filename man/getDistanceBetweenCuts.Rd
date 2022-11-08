@@ -26,12 +26,6 @@ getDistanceBetweenCuts(
 
 \item{heatmap}{chr, name of heatmap}
 }
-\value{
-
-}
 \description{
 Get bistance between R1-cuts on opposite strand per cell
-}
-\examples{
-
 }

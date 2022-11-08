@@ -19,6 +19,3 @@ vector of top genes, or (if n = NA) data frame with t-test output
 \description{
 Get top-genes per cluster based on T-test
 }
-\examples{
-
-}

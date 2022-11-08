@@ -15,7 +15,3 @@ tibble with gamma values
 \description{
 Get the topic to document/cell (gamma) distribution from a CTM output
 }
-\examples{
-
-
-}

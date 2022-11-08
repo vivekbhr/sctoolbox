@@ -19,6 +19,3 @@ pdf file with ggplot of topic probs
 \description{
 PLot topic probability on UMAP
 }
-\examples{
-
-}

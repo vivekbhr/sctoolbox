@@ -15,7 +15,3 @@ ggplot object
 \description{
 Plot variance explained for a PC matrix
 }
-\examples{
-
-
-}

@@ -17,7 +17,3 @@ cellDataSet object
 \description{
 Monocle ATAC/DNA workflow
 }
-\examples{
-
-
-}

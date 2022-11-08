@@ -21,6 +21,3 @@ list object with pca and umap output for both cells and regions.
 \description{
 Wrapper for LSA
 }
-\examples{
-
-}

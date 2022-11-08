@@ -23,14 +23,6 @@ get5pNucCounts(
 
 \item{bsGenome}{bsGenome object}
 }
-\value{
-
-}
 \description{
 Get counts for given motif at 5'-cut-site of MNAse
-}
-\examples{
-
-
-
 }

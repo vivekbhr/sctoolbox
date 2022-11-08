@@ -30,6 +30,3 @@ tf-idf matrix
 \description{
 Perform TF-IDF transformation of a matrix
 }
-\examples{
-
-}

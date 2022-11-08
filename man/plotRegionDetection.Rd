@@ -15,7 +15,3 @@ ggplot object
 \description{
 Plot no. of regions detected as a function of counts
 }
-\examples{
-
-
-}

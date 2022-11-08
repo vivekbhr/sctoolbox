@@ -63,24 +63,4 @@ LR_fit <- function(counts, genes, cell_group, filter_threshold)
 }
 
 
-#' Normalize a matrix based on DEseq sizefactor
-#'
-#' @param m matrix (cells in cols, genes in rows)
-#'
-#' @return matrix (normalized)
-#' @export
-#'
-#' @examples
-#'
-deseq_norm <- function(m)
-{
-  ncols <- dim(m)[2]
-  condition <- c(0, rep(1, ncols-1))
-  m <- round(m)
-  colData <- data.frame(row.names=colnames(m), condition = factor(condition))
-  dds <- DESeq2::DESeqDataSetFromMatrix(countData=m, colData=colData, design = ~condition)
-  dds <- DESeq2::estimateSizeFactors(dds)
-  sizeFactors <- dds$sizeFactor
-  m <- sweep(m, 2, sizeFactors, '/')
-  m
-}
+

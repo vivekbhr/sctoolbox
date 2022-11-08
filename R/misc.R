@@ -1,6 +1,6 @@
 #' Quick look into a large matrix/df
 #'
-#' @param m matrix/df
+#' @param m matrix/ dataframe
 #'
 #' @return matrix with 10 rows and cols
 #' @export
@@ -11,36 +11,39 @@ look <- function(m) {
   m[1:10, 1:10]
 }
 
+make_char <- function(...){
+  as.character(match.call()[-1])
+}
 
-#' Return n distinct color as hex code
+
+#' Return hex codes for distinct colors mapped to input names
 #'
-#' @param n
+#' @param names vector of names (each unique name is mapped to a hex code)
 #'
-#' @return
+#' @return clist vector of colors which can be used in ggplot2::scale_color_manual
 #' @export
 #'
 #' @examples
 #'
 #'
-load_colorList <- function(n) {
-    p1 <- c(
-      '#e0346c',
-      '#29a5db',
-      '#682a4d',
-      '#2a23e5',
-      '#584880',
-      '#69e186',
-      '#a4d352',
-      '#93be65',
-      '#c80b54',
-      '#695c20',
-      '#8d7e8c',
-      '#8a2eca',
-      '#ff4752',
-      '#ab3b94',
-      '#7b7a78')
-    return(p1[1:n])
+get_colors <- function(names, color_space=NA) {
+
+  scheme <- rwantshue::iwanthue(seed = 0, force_init = TRUE) # recreate with a seed
+  if(is.na(color_space)) {
+    color_space <- list(
+      c(0, 360),	# hue range [0,360]
+      c(0, 80),		# chroma range [0,100]
+      c(0, 100))		# lightness range [0,100]
   }
+
+  alis <- unique(names)
+  clist <- scheme$hex(length(alis), force_mode = FALSE, quality = 50, color_space = color_space)
+  names(clist) <- alis
+
+  return(clist)
+  }
+
+
 
 #' Load commonly used packages
 #'
@@ -151,4 +154,64 @@ prepForPseudobulk <- function(umap, prefix, suffix = ".txt") {
 
     })
 
+}
+
+#' Convert counts to TPM (or TP<scale_factor>)
+#'
+#' @param counts Count matrix of genes*samples
+#' @param effLen vector of effective gene lengths per gene
+#'
+#' @return matrix of TPM normalized counts
+#' @export
+#'
+#' @examples
+#'
+countToTpm <- function(counts, effLen, scale_factor=1e6) {
+  rate <- log(counts+1) - log(effLen+1)# counts/length
+  denom <- log(sum(exp(rate), na.rm = T))# sum(counts)
+  exp(rate - denom + log(scale_factor))#log([counts/length] / [sum(counts)/scale_factor])
+}
+
+#' Convert counts to FPKM
+#'
+#' @param counts Count matrix of genes*samples
+#' @param effLen vector of effective gene lengths per gene
+#'
+#' @return matrix of RPKM normalized counts
+#' @export
+#'
+#' @examples
+#'
+countToFpkm <- function(counts, effLen) {
+  N <- sum(counts)
+  exp( log(counts) + log(1e9) - log(effLen) - log(N) )
+}
+
+
+#' Convert FPKM to TPM
+#'
+#' @param fpkm vector of FPKM values
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
+fpkmToTpm <- function(fpkm) {
+  exp(log(fpkm) - log(sum(fpkm)) + log(1e6))
+}
+
+#' Convert counts to Effective counts
+#'
+#' @param counts vector of counts per gene
+#' @param len actual length per gene
+#' @param effLen effective length per gene
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
+countToEffCounts <- function(counts, len, effLen) {
+  counts * (len / effLen)
 }

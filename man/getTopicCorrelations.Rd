@@ -19,6 +19,3 @@ data frame of correlations (+plot object if plot= TRUE)
 \description{
 Extract topic correlations from a CTM model output
 }
-\examples{
-
-}

@@ -15,6 +15,3 @@ seurat object
 \description{
 Seurat workflow
 }
-\examples{
-
-}

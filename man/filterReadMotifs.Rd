@@ -23,14 +23,6 @@ filterReadMotifs(
 
 \item{bsgenome}{a BSgenome object}
 }
-\value{
-
-}
 \description{
 filter Reads based on nucleotide content at 5-prime
-}
-\examples{
-
-
-
 }

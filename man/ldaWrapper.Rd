@@ -19,7 +19,3 @@ list with LDA and umap output
 \description{
 Wrapper for LDA, UMAP and clustering
 }
-\examples{
-
-
-}

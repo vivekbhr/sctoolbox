@@ -32,6 +32,3 @@ a list, with filtered geneCounts in tibble (cell,gene, count), and wide matrix (
 \description{
 Count filters and plots
 }
-\examples{
-
-}

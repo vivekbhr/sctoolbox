@@ -15,6 +15,3 @@ char vecter of santized gene IDs
 \description{
 Remove version name from ensembl gene IDs
 }
-\examples{
-
-}

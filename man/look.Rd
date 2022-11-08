@@ -7,14 +7,11 @@
 look(m)
 }
 \arguments{
-\item{m}{matrix/df}
+\item{m}{matrix/ dataframe}
 }
 \value{
 matrix with 10 rows and cols
 }
 \description{
 Quick look into a large matrix/df
-}
-\examples{
-
 }

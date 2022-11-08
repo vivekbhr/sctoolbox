@@ -15,6 +15,3 @@ tibble with beta values
 \description{
 Get the word/region to topic (beta) distribution from a CTM output
 }
-\examples{
-
-}

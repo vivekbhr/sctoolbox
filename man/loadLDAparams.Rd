@@ -15,6 +15,3 @@ list of params
 \description{
 Load params for LDA or CTM
 }
-\examples{
-
-}

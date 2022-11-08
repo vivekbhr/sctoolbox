@@ -16,6 +16,3 @@ Nothing. Just loads packages
 \description{
 Load commonly used packages
 }
-\examples{
-
-}

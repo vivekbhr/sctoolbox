@@ -21,6 +21,3 @@ ggplot object
 \description{
 Plot marker genes on a UMAP
 }
-\examples{
-
-}
