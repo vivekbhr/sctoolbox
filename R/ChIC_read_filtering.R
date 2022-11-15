@@ -6,7 +6,7 @@
 #' @param plotFile file to save the plot of nucleotide content
 #' @param bsgenome a BSgenome object
 #'
-#' @return
+#' @return vector with T/F with filtering result for each read
 #' @export
 #'
 #' @examples
@@ -75,7 +75,7 @@ filterReadMotifs <- function(bamdf,
 #' @param bsGenome bsGenome object
 #' @param bamfile bam file object (using Rsamtools::bamFile)
 #'
-#' @return
+#' @return numeric with no. of reads passing the filter
 #' @export
 #'
 #' @examples
@@ -137,7 +137,7 @@ binFragLen <- function(x, bc){
 }
 
 
-#' Get bistance between R1-cuts on opposite strand per cell
+#' Get distance between R1-cuts on opposite strand per cell
 #'
 #' @param bam BAM file
 #' @param barcodes barcodes (chr vector)
@@ -146,7 +146,7 @@ binFragLen <- function(x, bc){
 #' @param linePlot chr, name of line plot
 #' @param heatmap chr, name of heatmap
 #'
-#' @return
+#' @return data.frame with barcode and distance between cuts
 #' @export
 #'
 #' @examples

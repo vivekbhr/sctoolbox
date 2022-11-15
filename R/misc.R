@@ -117,7 +117,7 @@ sanitizeGeneID <- function(geneIDs) {
 #'
 #' @param char "chr_start_end"
 #'
-#' @return
+#' @return GRanges object
 #' @export
 #'
 #' @examples
@@ -137,7 +137,7 @@ charToGRanges <- function(char) {
 #' @param prefix file name prefix (match it with bam file prefix to run snakemake afterwards)
 #' @param suffix file name suffix (match it with bam file suffix to run snakemake afterwards)
 #'
-#' @return
+#' @return None, file is written as prefix_<sampleID>_suffix.txt, which contains cell barcode, and clusterID
 #' @export
 #'
 #' @examples
@@ -192,7 +192,7 @@ countToFpkm <- function(counts, effLen) {
 #'
 #' @param fpkm vector of FPKM values
 #'
-#' @return
+#' @return vector with fpkm
 #' @export
 #'
 #' @examples
@@ -207,7 +207,7 @@ fpkmToTpm <- function(fpkm) {
 #' @param len actual length per gene
 #' @param effLen effective length per gene
 #'
-#' @return
+#' @return vector with effective counts
 #' @export
 #'
 #' @examples

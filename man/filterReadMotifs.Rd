@@ -23,6 +23,9 @@ filterReadMotifs(
 
 \item{bsgenome}{a BSgenome object}
 }
+\value{
+vector with T/F with filtering result for each read
+}
 \description{
 filter Reads based on nucleotide content at 5-prime
 }

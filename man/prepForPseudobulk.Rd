@@ -13,6 +13,9 @@ prepForPseudobulk(umap, prefix, suffix = ".txt")
 
 \item{suffix}{file name suffix (match it with bam file suffix to run snakemake afterwards)}
 }
+\value{
+None, file is written as prefix_<sampleID>_suffix.txt, which contains cell barcode, and clusterID
+}
 \description{
 prepare .txt file to create pseudobulk bigwigs from clustered UMAP (using snakemake workflow)
 }

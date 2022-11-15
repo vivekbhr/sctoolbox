@@ -2,7 +2,7 @@
 % Please edit documentation in R/TAfraction.R
 \name{getDistanceBetweenCuts}
 \alias{getDistanceBetweenCuts}
-\title{Get bistance between R1-cuts on opposite strand per cell}
+\title{Get distance between R1-cuts on opposite strand per cell}
 \usage{
 getDistanceBetweenCuts(
   bam,
@@ -26,6 +26,9 @@ getDistanceBetweenCuts(
 
 \item{heatmap}{chr, name of heatmap}
 }
+\value{
+data.frame with barcode and distance between cuts
+}
 \description{
-Get bistance between R1-cuts on opposite strand per cell
+Get distance between R1-cuts on opposite strand per cell
 }

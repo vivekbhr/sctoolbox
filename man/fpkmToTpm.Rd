@@ -9,6 +9,9 @@ fpkmToTpm(fpkm)
 \arguments{
 \item{fpkm}{vector of FPKM values}
 }
+\value{
+vector with fpkm
+}
 \description{
 Convert FPKM to TPM
 }

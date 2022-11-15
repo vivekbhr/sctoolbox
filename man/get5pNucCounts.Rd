@@ -23,6 +23,9 @@ get5pNucCounts(
 
 \item{bsGenome}{bsGenome object}
 }
+\value{
+numeric with no. of reads passing the filter
+}
 \description{
 Get counts for given motif at 5'-cut-site of MNAse
 }

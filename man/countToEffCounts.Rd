@@ -13,6 +13,9 @@ countToEffCounts(counts, len, effLen)
 
 \item{effLen}{effective length per gene}
 }
+\value{
+vector with effective counts
+}
 \description{
 Convert counts to Effective counts
 }

@@ -4,7 +4,7 @@
 \alias{lsa_wrapper}
 \title{Wrapper for LSA}
 \usage{
-lsa_wrapper(counts, nPC, nK, outPdf)
+lsa_wrapper(counts, nPC, nK, umap_spread = 5, umap_mindist = 0.1, outPdf = NA)
 }
 \arguments{
 \item{counts}{a count matrix of genes/regions (rows) * cells(columns), or a tibble of "gene", "cell" and "count"}

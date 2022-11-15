@@ -25,7 +25,7 @@ tfidf(
 (IDF is not be used with non-binary data)}
 }
 \value{
-tf-idf matrix
+tf-idf (sparse) matrix
 }
 \description{
 Perform TF-IDF transformation of a matrix
