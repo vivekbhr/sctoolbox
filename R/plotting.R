@@ -121,6 +121,7 @@ plotPlateLayout <- function(barcodeFile, bcInfo, varToPlot="count", groupInfo=NA
 #' @param umaps names list of data.frames with columns (UMAP1, UMAP2) and cell IDs in rownames.
 #' @param color_by Column ID to color the UMAP by
 #' @param center_grp Name of the list element to use as "center" of the joint UMAP
+#' @param highlight_subgroup Name of the subgroup in the "color_by" column to highlight. All other points will be colored grey.
 #' @param match_df In case cellIDs are not matched with themselves, provide a dataframe with source->target cell matchings.
 #'                 NOTE: this only works for 2 modalities, columns of the data. frame must be named "source" and "target"
 #'
@@ -131,7 +132,12 @@ plotPlateLayout <- function(barcodeFile, bcInfo, varToPlot="count", groupInfo=NA
 #' @examples
 #'
 #'
-plotMultiUMAP <- function(umaps, color_by='annotation', center_grp= 'rna', color_lines=TRUE, match_df=NA) {
+plotMultiUMAP <- function(umaps,
+                          color_by='annotation',
+                          center_grp= 'rna',
+                          color_lines=TRUE,
+                          match_df=NA,
+                          highlight_subgroup=NA) {
 
   umap_merge <- plyr::ldply(umaps, function(x) as.data.frame(x) %>% tibble::rownames_to_column("cellID"))
 
@@ -156,22 +162,48 @@ plotMultiUMAP <- function(umaps, color_by='annotation', center_grp= 'rna', color
   }
 
   # plot
+  subgrp_colors <- get_colors(umap_merge[[color_by]])
+
+  if(!is.na(highlight_subgroup)) {
+    umap_merge$subgroup <- umap_merge[[color_by]] == highlight_subgroup
+    umap_merge[is.na(umap_merge$subgroup), "subgroup"] <- FALSE
+    umap_merge_subgroup <- umap_merge[umap_merge$subgroup, ] #subset (only for subgroup)
+  }
+
   p <- ggplot(umap_merge, aes_string('UMAP1', 'UMAP2', fill=color_by)) +
     theme_minimal(base_size = 14)
+
   if(!(is.na(match_df))) {
     rownames(umap_merge) <- umap_merge$cellID
     umap_merge[match_df$source, 'cellID'] <- match_df$target
   }
- if(isTRUE(color_lines)) {
+
+ if(isTRUE(color_lines) & is.na(highlight_subgroup)) {
      p <- p %+% geom_line(aes_string(group = 'cellID', color=color_by), size=0.5, alpha=0.05)
    } else {
-     p <- p %+% geom_line(aes_string(group = 'cellID'), size=0.5, alpha=0.05, color='grey')
+     if(!is.na(highlight_subgroup)) {
+       p <- p %+% geom_line(data = umap_merge[umap_merge$subgroup, ],
+                            aes_string(group = 'cellID'),
+                            size=0.5, alpha=0.05,
+                            color='black')
+     } else {
+       p <- p %+% geom_line(aes_string(group = 'cellID'), size=0.5, alpha=0.05, color='grey')
+     }
    }
 
-  p %+% geom_point(size=1.5, pch=21) +
-    scale_fill_manual(values = get_colors(umap_merge[[color_by]])) +
-    theme(legend.position = "top", axis.text.x = element_blank(),
-          axis.ticks = element_line(linetype = "solid" )) +
-    guides(fill = guide_legend(title.position = "top"), color = "none") + NULL
+  p <- p %+%  theme(legend.position = "top", axis.text.x = element_blank(),
+              axis.ticks = element_line(linetype = "solid" )) +
+              guides(fill = guide_legend(title.position = "top"), color = "none")
 
+
+  if(!is.na(highlight_subgroup)) {
+    p <- p %+% geom_point(data=umap_merge_subgroup, size=1.5, pch=21) +
+               scale_fill_manual(values = subgrp_colors) +
+               geom_point(data=umap_merge[!umap_merge$subgroup, ], size=1.5, pch=21,
+                          alpha = 0.01, fill="grey60")
+  } else {
+    p <- p %+% geom_point(size=1.5, pch=21) + scale_fill_manual(values = subgrp_colors)
+  }
+
+  p + NULL
 }

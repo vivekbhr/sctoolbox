@@ -9,7 +9,8 @@ plotMultiUMAP(
   color_by = "annotation",
   center_grp = "rna",
   color_lines = TRUE,
-  match_df = NA
+  match_df = NA,
+  highlight_subgroup = NA
 )
 }
 \arguments{
@@ -21,6 +22,8 @@ plotMultiUMAP(
 
 \item{match_df}{In case cellIDs are not matched with themselves, provide a dataframe with source->target cell matchings.
 NOTE: this only works for 2 modalities, columns of the data. frame must be named "source" and "target"}
+
+\item{highlight_subgroup}{Name of the subgroup in the "color_by" column to highlight. All other points will be colored grey.}
 }
 \value{
 ggplot2 object
