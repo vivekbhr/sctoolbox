@@ -66,6 +66,8 @@ countsInRegions_perCell <- function(regions, barcodelist, bamFiles) {
 #'
 #' @return SingleCellExperiment object
 #' @importFrom SingleCellExperiment SingleCellExperiment
+#' @importFrom magrittr %>%
+#' @importFrom S4Vectors DataFrame
 #' @export
 #'
 #' @examples

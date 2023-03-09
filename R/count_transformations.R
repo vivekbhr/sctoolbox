@@ -153,10 +153,11 @@ tpt_bygroup <- function(sce, group_var, length_var, assays, aggtype="sum") {
 #'
 #' @examples
 #'
-getGeneActivity <- function(mat, genes_gr, subset, overlapGap=10000){
+
+getGeneActivity <- function(mat, genes_gr, subset=NULL, overlapGap=10000){
 
   gr <- sctoolbox::charToGRanges(rownames(mat))
-  if(!is.na(subset)){
+  if(!is.null(subset)){
     gr_gene <- genes_gr[subset]
   } else {
     gr_gene <- genes_gr
