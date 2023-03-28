@@ -207,3 +207,92 @@ plotMultiUMAP <- function(umaps,
 
   p + NULL
 }
+
+
+
+
+
+#' Make a DimPlot (UMAP/PCA) from a SingleCellExperiment Object,
+#' where cluster labels are numeric, and the annotation is separated
+#'
+#' @param object A SingleCellExperiment object (with reducedDim slot),
+#'               or a data.frame with with colnames: "Dim1", "Dim2", that are to be plotted.
+#'               There must be additional columns present in the input data frame or in colData(sce),
+#'               that would be used for coloring/labelling the plot.
+#' @param dimtoplot slot from reducedDimNames(sce) to plot
+#' @param vartoplot column from colData(sce) to plot
+#' @param separate_legend if TRUE, legend is plotted in a new plot. By default
+#'                        legend is stitched to the right of the plot.
+#'
+#' @return ggplot object
+#' @export
+#'
+#' @examples
+#'
+complexDimPlot <- function(sce,
+                           dimtoplot = "X_umap",
+                           vartoplot = "hour",
+                           separate_legend = FALSE) {
+  # Get 2D embedding
+  if(class(sce) == "SingleCellExperiment") {
+    umap <- reducedDim(sce, dimtoplot)
+    colnames(umap) <- c("Dim1", "Dim2")
+    umap %<>% cbind(colData(sce) %>% as.data.frame())
+  } else if(class(sce) == "data.frame") {
+    umap <- sce
+  } else {
+    stop("Please provide a sce object or a data.frame!")
+  }
+  if(vartoplot == "annotation") {
+    message("Renaming vartoplot to annotation_orig")
+    umap$annotation_orig <- umap[,vartoplot]
+    vartoplot <- "annotation_orig"
+  }
+  umap[,vartoplot] %<>% factor() # only catagoricals are allowed
+  # Annotation
+  df <- umap %>% dplyr::group_by( !!as.name(vartoplot) ) %>%
+    dplyr::summarise(Dim1 = mean(Dim1),
+                     Dim2 = mean(Dim2),
+                     annotation=unique( !!as.name(vartoplot) )) %>%
+    dplyr::mutate(annot_num = factor(1:length(annotation)),
+                  annotation = paste(annot_num, annotation, sep=": ")) %>%
+    as.data.frame()
+  df$annotation <- factor(df$annotation, levels=df$annotation[order(df$annot_num)], ordered=TRUE)
+
+  # colors
+  manual_colors <- sctoolbox::get_colors(umap[,vartoplot])
+  manual_num_colors <- manual_colors
+  names(manual_num_colors) <- df[match(names(manual_num_colors),
+                                       df[,vartoplot]), "annotation"]
+
+  ## P1: with umap + numeric labels
+  plt <- ggplot(umap, aes_string("Dim1", "Dim2", color=vartoplot)) +
+    geom_point(na.rm = T, alpha=0.3) +
+    scale_color_manual(values = manual_colors) +
+    theme_minimal(base_size = 14) + theme(legend.position = "none") +
+    geom_point(data=df, aes(Dim1, Dim2), size = 7, shape = 21, fill = "white") +
+    geom_text(data=df, aes(Dim1, Dim2, label=annot_num), fontface="bold")
+
+  ## P2: only label + annotation
+  for_num_legend <- ggplot(df, aes(Dim1, Dim2, color=annotation)) + geom_point() +
+    scale_color_manual(values = manual_num_colors) +
+    theme(legend.title=element_blank(),
+          legend.text = element_text(face = "bold"))
+  num_legend <- cowplot::get_legend(for_num_legend)
+
+  ## Stitch P1+P2
+  if(isTRUE(separate_legend)) {
+    grid::grid.draw(plt)
+    grid::grid.newpage()
+    grid::grid.draw(num_legend)
+  } else {
+    cowplot::plot_grid(plt,
+                       cowplot::plot_grid(num_legend, nrow = 1),
+                       ncol = 2,
+                       rel_widths = c(4,1),
+                       rel_heights = c(1,1) )
+
+  }
+
+
+}

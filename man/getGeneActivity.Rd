@@ -4,7 +4,7 @@
 \alias{getGeneActivity}
 \title{Collate binCounts at gene level based on overlap}
 \usage{
-getGeneActivity(mat, genes_gr, subset, overlapGap = 10000)
+getGeneActivity(mat, genes_gr, subset = NULL, overlapGap = 10000)
 }
 \arguments{
 \item{mat}{Count matrix (bin-level) with regions as rownames (format: chr_start_end)}

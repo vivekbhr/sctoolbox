@@ -3,6 +3,7 @@
 export(LR)
 export(LR_fit)
 export(charToGRanges)
+export(complexDimPlot)
 export(cosine_similarity)
 export(countFilter)
 export(countToEffCounts)
