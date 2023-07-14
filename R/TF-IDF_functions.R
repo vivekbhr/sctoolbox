@@ -59,17 +59,17 @@ tfidf = function(bmat, frequencies=TRUE, log_scale_tf=TRUE, scale_factor=100000,
   return(tf_idf_counts)
 }
 
-#' Run fast PCA (irlba) on TF-IDF matrix
-#'
-#' @param mat matrix
+#' Run fast PCA (irlba) on a feature*sample matrix
+#' @param mat feature*sample matrix (eg. rows= genes/regions, cols=cells), counts must already be normalized and scaled
 #' @param dims how many dims to calculate?
 #'
-#' @return PCA output matrix
+#' @return list of feature*PC and cell\*PC output matrices
 #' @export
 #'
 #' @examples
 #'
 do_pca <- function(mat, dims=50) {
+  mat@x[!is.finite(mat@x)] <- 0
   pca.results = irlba::irlba(Matrix::t(mat), nv=dims)
   final_result = pca.results$u %*% diag(pca.results$d)
   rownames(final_result) = colnames(mat)
