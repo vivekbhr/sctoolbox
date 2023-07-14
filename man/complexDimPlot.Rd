@@ -9,13 +9,16 @@ complexDimPlot(
   sce,
   dimtoplot = "X_umap",
   vartoplot = "hour",
+  numeric_annotation = TRUE,
   separate_legend = FALSE
 )
 }
 \arguments{
 \item{dimtoplot}{slot from reducedDimNames(sce) to plot}
 
-\item{vartoplot}{column from colData(sce) to plot}
+\item{vartoplot}{column from colData(sce) to plot (must be categorical)}
+
+\item{numeric_annotation}{set it to TRUE to assign numeric IDs to each annotation (this avoids label overlap)}
 
 \item{separate_legend}{if TRUE, legend is plotted in a new plot. By default
 legend is stitched to the right of the plot.}

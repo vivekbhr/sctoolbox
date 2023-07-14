@@ -8,9 +8,14 @@ plotMultiUMAP(
   umaps,
   color_by = "annotation",
   center_grp = "rna",
+  padding = 0.4,
   color_lines = TRUE,
-  match_df = NA,
-  highlight_subgroup = NA
+  point_size = 1.5,
+  line_size = 0.5,
+  line_alpha = 0.05,
+  highlight_subgroup = NA,
+  subgroup_colors = NULL,
+  match_df = NA
 )
 }
 \arguments{
@@ -20,10 +25,18 @@ plotMultiUMAP(
 
 \item{center_grp}{Name of the list element to use as "center" of the joint UMAP}
 
-\item{match_df}{In case cellIDs are not matched with themselves, provide a dataframe with source->target cell matchings.
-NOTE: this only works for 2 modalities, columns of the data. frame must be named "source" and "target"}
+\item{point_size}{numeric, size of the points}
+
+\item{line_size}{numeric, size of the connecting lines}
+
+\item{line_alpha}{numeric, transparancy of the connecting lines}
 
 \item{highlight_subgroup}{Name of the subgroup in the "color_by" column to highlight. All other points will be colored grey.}
+
+\item{subgroup_colors}{vector A named vactor of colors, where names = categories present in "color_by" column, values are colors}
+
+\item{match_df}{In case cellIDs are not matched with themselves, provide a dataframe with source->target cell matchings.
+NOTE: this only works for 2 modalities, columns of the data. frame must be named "source" and "target"}
 }
 \value{
 ggplot2 object

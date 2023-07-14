@@ -121,7 +121,12 @@ plotPlateLayout <- function(barcodeFile, bcInfo, varToPlot="count", groupInfo=NA
 #' @param umaps names list of data.frames with columns (UMAP1, UMAP2) and cell IDs in rownames.
 #' @param color_by Column ID to color the UMAP by
 #' @param center_grp Name of the list element to use as "center" of the joint UMAP
+#' @param point_size numeric, size of the points
+#' @param point_stroke numeric, stroke size of the points
+#' @param line_size numeric, size of the connecting lines
+#' @param line_alpha numeric, transparancy of the connecting lines
 #' @param highlight_subgroup Name of the subgroup in the "color_by" column to highlight. All other points will be colored grey.
+#' @param subgroup_colors vector A named vactor of colors, where names = categories present in "color_by" column, values are colors
 #' @param match_df In case cellIDs are not matched with themselves, provide a dataframe with source->target cell matchings.
 #'                 NOTE: this only works for 2 modalities, columns of the data. frame must be named "source" and "target"
 #'
@@ -135,34 +140,51 @@ plotPlateLayout <- function(barcodeFile, bcInfo, varToPlot="count", groupInfo=NA
 plotMultiUMAP <- function(umaps,
                           color_by='annotation',
                           center_grp= 'rna',
+                          padding = 0.4,
                           color_lines=TRUE,
-                          match_df=NA,
-                          highlight_subgroup=NA) {
+                          point_size=1.5,
+                          point_stroke=0.05,
+                          line_size=0.5,
+                          line_alpha=0.05,
+                          highlight_subgroup=NA,
+                          subgroup_colors=NULL,
+                          match_df=NA) {
 
   umap_merge <- plyr::ldply(umaps, function(x) as.data.frame(x) %>% tibble::rownames_to_column("cellID"))
+  # rescale individual UMAPs
+  minmax <- function(x) ((x - min(x)) / (max(x) - min(x)))
+  umap_merge %<>% dplyr::group_by(.id) %>% dplyr::mutate(UMAP1 = minmax(UMAP1), UMAP2 = minmax(UMAP2))
 
   ## update the position of other plots w.r.t center
-  crange <- range(umap_merge[umap_merge$.id == center_grp, 'UMAP1'])
-  padding = max(abs(crange)) * (40/100) # 40% padding
   modes = setdiff(unique(umap_merge$.id), center_grp)
-
+  crange <- c(0, 1)
+#  range(umap_merge[umap_merge$.id == center_grp, 'UMAP1'])
+  m = 0
   for(i in 1:length(modes)) {
-    m = i+1
-    if(i %% 2 == 0) {
-      # 2,4,6.. : add coords to the left
-      to_subtract = (m*min(crange)) - padding# -ve number
-      umap_merge[umap_merge$.id == modes[i], "UMAP1"] %<>% add(to_subtract)
-
-    } else {
+    if(i %% 2 != 0) {
+      to_add <- crange[2] + padding + m
       # 1,3,5.. :add coords to the right
-      to_add = (m*max(crange)) + padding
       umap_merge[umap_merge$.id == modes[i], "UMAP1"] %<>% add(to_add)
+      crange[2] %<>% add(to_add)
+
+      } else {
+      # 2,4,6.. : add coords to the left
+      to_subtract = crange[1] - padding - m# -ve number
+      umap_merge[umap_merge$.id == modes[i], "UMAP1"] %<>% add(to_subtract)
+      crange[1] %<>% add(to_subtract)
     }
-    i = m
+    m %<>% add(1)
   }
 
   # plot
-  subgrp_colors <- get_colors(umap_merge[[color_by]])
+  if(is.null(subgroup_colors)) {
+    # fetch colors automatically
+    subgrp_colors <- get_colors(umap_merge[[color_by]])
+  } else {
+    # TODO: check if enough colors are supplied
+    subgrp_colors <- subgroup_colors
+  }
+
 
   if(!is.na(highlight_subgroup)) {
     umap_merge$subgroup <- umap_merge[[color_by]] == highlight_subgroup
@@ -179,30 +201,34 @@ plotMultiUMAP <- function(umaps,
   }
 
  if(isTRUE(color_lines) & is.na(highlight_subgroup)) {
-     p <- p %+% geom_line(aes_string(group = 'cellID', color=color_by), size=0.5, alpha=0.05)
+     p <- p %+% geom_line(aes_string(group = 'cellID', color=color_by), size=line_size, alpha=line_alpha)
    } else {
      if(!is.na(highlight_subgroup)) {
        p <- p %+% geom_line(data = umap_merge[umap_merge$subgroup, ],
                             aes_string(group = 'cellID'),
-                            size=0.5, alpha=0.05,
+                            size=line_size, alpha=line_alpha,
                             color='black')
      } else {
-       p <- p %+% geom_line(aes_string(group = 'cellID'), size=0.5, alpha=0.05, color='grey')
+       p <- p %+% geom_line(aes_string(group = 'cellID'), size=line_size, alpha=line_alpha, color='grey')
      }
    }
 
-  p <- p %+%  theme(legend.position = "top", axis.text.x = element_blank(),
-              axis.ticks = element_line(linetype = "solid" )) +
-              guides(fill = guide_legend(title.position = "top"), color = "none")
+  p <- p %+%  theme(legend.position = "top",
+                    axis.text = element_blank(),
+                    axis.ticks = element_blank(), #element_line(linetype = "solid"),
+                    panel.grid.major = element_blank(),
+                    panel.grid.minor = element_blank() ) +
+              guides(fill = guide_legend(title.position = "top",
+                                         override.aes = list(size=5)), color = "none")
 
 
   if(!is.na(highlight_subgroup)) {
-    p <- p %+% geom_point(data=umap_merge_subgroup, size=1.5, pch=21) +
+    p <- p %+% geom_point(data=umap_merge_subgroup, size=point_size, pch=21, stroke=0.05) +
                scale_fill_manual(values = subgrp_colors) +
-               geom_point(data=umap_merge[!umap_merge$subgroup, ], size=1.5, pch=21,
+               geom_point(data=umap_merge[!umap_merge$subgroup, ], size=point_size, pch=21,
                           alpha = 0.01, fill="grey60")
   } else {
-    p <- p %+% geom_point(size=1.5, pch=21) + scale_fill_manual(values = subgrp_colors)
+    p <- p %+% geom_point(size=point_size, pch=21, stroke=point_stroke) + scale_fill_manual(values = subgrp_colors)
   }
 
   p + NULL
@@ -220,7 +246,8 @@ plotMultiUMAP <- function(umaps,
 #'               There must be additional columns present in the input data frame or in colData(sce),
 #'               that would be used for coloring/labelling the plot.
 #' @param dimtoplot slot from reducedDimNames(sce) to plot
-#' @param vartoplot column from colData(sce) to plot
+#' @param vartoplot column from colData(sce) to plot (must be categorical)
+#' @param numeric_annotation set it to TRUE to assign numeric IDs to each annotation (this avoids label overlap)
 #' @param separate_legend if TRUE, legend is plotted in a new plot. By default
 #'                        legend is stitched to the right of the plot.
 #'
@@ -232,6 +259,7 @@ plotMultiUMAP <- function(umaps,
 complexDimPlot <- function(sce,
                            dimtoplot = "X_umap",
                            vartoplot = "hour",
+                           numeric_annotation = TRUE,
                            separate_legend = FALSE) {
   # Get 2D embedding
   if(class(sce) == "SingleCellExperiment") {
@@ -265,34 +293,47 @@ complexDimPlot <- function(sce,
   names(manual_num_colors) <- df[match(names(manual_num_colors),
                                        df[,vartoplot]), "annotation"]
 
-  ## P1: with umap + numeric labels
-  plt <- ggplot(umap, aes_string("Dim1", "Dim2", color=vartoplot)) +
-    geom_point(na.rm = T, alpha=0.3) +
-    scale_color_manual(values = manual_colors) +
-    theme_minimal(base_size = 14) + theme(legend.position = "none") +
-    geom_point(data=df, aes(Dim1, Dim2), size = 7, shape = 21, fill = "white") +
-    geom_text(data=df, aes(Dim1, Dim2, label=annot_num), fontface="bold")
+  ## plot annotation separately in another step
+  if(isTRUE(numeric_annotation)) {
+    # P1: with umap + numeric labels
+    plt <- ggplot(umap, aes_string("Dim1", "Dim2", color=vartoplot)) +
+      geom_point(na.rm = T, alpha=0.5) +
+      scale_color_manual(values = manual_colors) +
+      theme_minimal(base_size = 14) + theme(legend.position = "none") +
+      geom_point(data=df, aes(Dim1, Dim2), size = 7, shape = 21, fill = "white") +
+      geom_text(data=df, aes(Dim1, Dim2, label=annot_num), fontface="bold")
 
-  ## P2: only label + annotation
-  for_num_legend <- ggplot(df, aes(Dim1, Dim2, color=annotation)) + geom_point() +
-    scale_color_manual(values = manual_num_colors) +
-    theme(legend.title=element_blank(),
-          legend.text = element_text(face = "bold"))
-  num_legend <- cowplot::get_legend(for_num_legend)
+    # P2: only label + annotation
+    for_num_legend <- ggplot(df, aes(Dim1, Dim2, color=annotation)) + geom_point() +
+      scale_color_manual(values = manual_num_colors) +
+      theme(legend.title=element_blank(),
+            legend.text = element_text(face = "bold"))
+    num_legend <- cowplot::get_legend(for_num_legend)
 
-  ## Stitch P1+P2
-  if(isTRUE(separate_legend)) {
-    grid::grid.draw(plt)
-    grid::grid.newpage()
-    grid::grid.draw(num_legend)
+    # Stitch P1+P2
+    if(isTRUE(separate_legend)) {
+      grid::grid.draw(plt)
+      grid::grid.newpage()
+      grid::grid.draw(num_legend)
+    } else {
+      cowplot::plot_grid(plt,
+                         cowplot::plot_grid(num_legend, nrow = 1),
+                         ncol = 2,
+                         rel_widths = c(4,1),
+                         rel_heights = c(1,1) )
+
+    }
   } else {
-    cowplot::plot_grid(plt,
-                       cowplot::plot_grid(num_legend, nrow = 1),
-                       ncol = 2,
-                       rel_widths = c(4,1),
-                       rel_heights = c(1,1) )
+    ## Plot annotation directly on UMAP if numeric_annotation=FALSE
+    df$annotation <- df[,vartoplot]
+    if(isTRUE(separate_legend)) message("Legends are plotted directly on the Dimplot")
 
+    ggplot(umap, aes_string("Dim1", "Dim2", color=vartoplot)) +
+      geom_point(na.rm = T, alpha=0.5) +
+      scale_color_manual(values = manual_colors) +
+      theme_minimal(base_size = 14) + theme(legend.position = "none") +
+      geom_label_repel(data=df, aes(Dim1, Dim2, label=annotation), fontface="bold") +
+      NULL
   }
-
 
 }
