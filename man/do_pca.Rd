@@ -2,18 +2,18 @@
 % Please edit documentation in R/TF-IDF_functions.R
 \name{do_pca}
 \alias{do_pca}
-\title{Run fast PCA (irlba) on TF-IDF matrix}
+\title{Run fast PCA (irlba) on a feature*sample matrix}
 \usage{
 do_pca(mat, dims = 50)
 }
 \arguments{
-\item{mat}{matrix}
+\item{mat}{feature*sample matrix (eg. rows= genes/regions, cols=cells), counts must already be normalized and scaled}
 
 \item{dims}{how many dims to calculate?}
 }
 \value{
-PCA output matrix
+list of feature*PC and cell\*PC output matrices
 }
 \description{
-Run fast PCA (irlba) on TF-IDF matrix
+Run fast PCA (irlba) on a feature*sample matrix
 }

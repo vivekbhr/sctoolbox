@@ -11,6 +11,7 @@ plotMultiUMAP(
   padding = 0.4,
   color_lines = TRUE,
   point_size = 1.5,
+  point_stroke = 0.05,
   line_size = 0.5,
   line_alpha = 0.05,
   highlight_subgroup = NA,
@@ -26,6 +27,8 @@ plotMultiUMAP(
 \item{center_grp}{Name of the list element to use as "center" of the joint UMAP}
 
 \item{point_size}{numeric, size of the points}
+
+\item{point_stroke}{numeric, stroke size of the points}
 
 \item{line_size}{numeric, size of the connecting lines}
 

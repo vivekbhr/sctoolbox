@@ -9,8 +9,12 @@ complexDimPlot(
   sce,
   dimtoplot = "X_umap",
   vartoplot = "hour",
+  point_size = 1.5,
+  point_stroke = 0.05,
   numeric_annotation = TRUE,
-  separate_legend = FALSE
+  separate_legend = FALSE,
+  manual_colors = NULL,
+  return_objects = FALSE
 )
 }
 \arguments{
@@ -18,10 +22,18 @@ complexDimPlot(
 
 \item{vartoplot}{column from colData(sce) to plot (must be categorical)}
 
+\item{point_size}{numeric, size of the points}
+
+\item{point_stroke}{numeric, stroke size of the points}
+
 \item{numeric_annotation}{set it to TRUE to assign numeric IDs to each annotation (this avoids label overlap)}
 
 \item{separate_legend}{if TRUE, legend is plotted in a new plot. By default
 legend is stitched to the right of the plot.}
+
+\item{manual_colors}{vector A named vactor of colors, where names = categories present in "vartoplot" column, values are colors}
+
+\item{return_objects}{boolean, whether to return plot objects as list, instead of plotting}
 
 \item{object}{A SingleCellExperiment object (with reducedDim slot),
 or a data.frame with with colnames: "Dim1", "Dim2", that are to be plotted.
