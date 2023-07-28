@@ -249,9 +249,13 @@ plotMultiUMAP <- function(umaps,
 #'               that would be used for coloring/labelling the plot.
 #' @param dimtoplot slot from reducedDimNames(sce) to plot
 #' @param vartoplot column from colData(sce) to plot (must be categorical)
+#' @param point_size numeric, size of the points
+#' @param point_stroke numeric, stroke size of the points
 #' @param numeric_annotation set it to TRUE to assign numeric IDs to each annotation (this avoids label overlap)
 #' @param separate_legend if TRUE, legend is plotted in a new plot. By default
 #'                        legend is stitched to the right of the plot.
+#' @param manual_colors vector A named vactor of colors, where names = categories present in "vartoplot" column, values are colors
+#' @param return_objects boolean, whether to return plot objects as list, instead of plotting
 #'
 #' @return ggplot object
 #' @export
@@ -261,8 +265,13 @@ plotMultiUMAP <- function(umaps,
 complexDimPlot <- function(sce,
                            dimtoplot = "X_umap",
                            vartoplot = "hour",
+                           point_size = 1.5,
+                           point_stroke = 0.05,
                            numeric_annotation = TRUE,
-                           separate_legend = FALSE) {
+                           separate_legend = FALSE,
+                           manual_colors = NULL,
+                           return_objects = FALSE
+                           ) {
   # Get 2D embedding
   if(class(sce) == "SingleCellExperiment") {
     umap <- reducedDim(sce, dimtoplot)
@@ -290,20 +299,31 @@ complexDimPlot <- function(sce,
   df$annotation <- factor(df$annotation, levels=df$annotation[order(df$annot_num)], ordered=TRUE)
 
   # colors
-  manual_colors <- sctoolbox::get_colors(umap[,vartoplot])
+  if(is.null(manual_colors)){
+    manual_colors <- sctoolbox::get_colors(umap[,vartoplot])
+  }
   manual_num_colors <- manual_colors
   names(manual_num_colors) <- df[match(names(manual_num_colors),
                                        df[,vartoplot]), "annotation"]
 
-  ## plot annotation separately in another step
+  plt <- ggplot(umap, aes_string("Dim1", "Dim2", fill=vartoplot, color=vartoplot)) +
+    geom_point(size=point_size, pch=21, stroke=point_stroke) +
+    scale_fill_manual(values = manual_colors) +
+    scale_color_manual(values = manual_colors) +
+    theme_minimal(base_size = 14) +
+    theme(legend.position = "none",
+          axis.text = element_blank(),
+          axis.ticks = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank()
+          )
+
+
   if(isTRUE(numeric_annotation)) {
+    ## plot annotation separately in another step
     # P1: with umap + numeric labels
-    plt <- ggplot(umap, aes_string("Dim1", "Dim2", color=vartoplot)) +
-      geom_point(na.rm = T, alpha=0.5) +
-      scale_color_manual(values = manual_colors) +
-      theme_minimal(base_size = 14) + theme(legend.position = "none") +
-      geom_point(data=df, aes(Dim1, Dim2), size = 7, shape = 21, fill = "white") +
-      geom_text(data=df, aes(Dim1, Dim2, label=annot_num), fontface="bold")
+     plt <- plt + geom_point(data=df, aes(Dim1, Dim2), size = 7, shape = 21, fill = "white") +
+            geom_text(data=df, aes(Dim1, Dim2, label=annot_num), fontface="bold")
 
     # P2: only label + annotation
     for_num_legend <- ggplot(df, aes(Dim1, Dim2, color=annotation)) + geom_point() +
@@ -311,31 +331,30 @@ complexDimPlot <- function(sce,
       theme(legend.title=element_blank(),
             legend.text = element_text(face = "bold"))
     num_legend <- cowplot::get_legend(for_num_legend)
-
+    out <- list(plot = plt,
+                legend = num_legend,
+                label_df = df)
     # Stitch P1+P2
     if(isTRUE(separate_legend)) {
-      grid::grid.draw(plt)
-      grid::grid.newpage()
-      grid::grid.draw(num_legend)
+        grid::grid.draw(plt)
+        grid::grid.newpage()
+        grid::grid.draw(num_legend)
+        } else {
+          cowplot::plot_grid(plt,
+                           cowplot::plot_grid(num_legend, nrow = 1),
+                           ncol = 2,
+                           rel_widths = c(4,1),
+                           rel_heights = c(1,1) )
+        }
     } else {
-      cowplot::plot_grid(plt,
-                         cowplot::plot_grid(num_legend, nrow = 1),
-                         ncol = 2,
-                         rel_widths = c(4,1),
-                         rel_heights = c(1,1) )
+      ## Plot annotation directly on UMAP if numeric_annotation=FALSE
+      df$annotation <- df[,vartoplot]
+      if(isTRUE(separate_legend)) message("Legends are plotted directly on the Dimplot")
 
+      out <- plt + geom_label_repel(data=df, aes(Dim1, Dim2, label=annotation), fontface="bold") + NULL
     }
-  } else {
-    ## Plot annotation directly on UMAP if numeric_annotation=FALSE
-    df$annotation <- df[,vartoplot]
-    if(isTRUE(separate_legend)) message("Legends are plotted directly on the Dimplot")
 
-    ggplot(umap, aes_string("Dim1", "Dim2", color=vartoplot)) +
-      geom_point(na.rm = T, alpha=0.5) +
-      scale_color_manual(values = manual_colors) +
-      theme_minimal(base_size = 14) + theme(legend.position = "none") +
-      geom_label_repel(data=df, aes(Dim1, Dim2, label=annotation), fontface="bold") +
-      NULL
+  if(isTRUE(return_objects)){
+    return(out)
   }
-
 }
