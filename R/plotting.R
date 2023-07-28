@@ -223,12 +223,14 @@ plotMultiUMAP <- function(umaps,
 
 
   if(!is.na(highlight_subgroup)) {
-    p <- p %+% geom_point(data=umap_merge_subgroup, size=point_size, pch=21, stroke=0.05) +
-               scale_fill_manual(values = subgrp_colors) +
+    p <- p %+% geom_point(data=umap_merge_subgroup, size=point_size, pch=21, stroke=point_stroke) +
+               scale_fill_manual(values = subgrp_colors) + scale_color_manual(values = subgrp_colors) +
                geom_point(data=umap_merge[!umap_merge$subgroup, ], size=point_size, pch=21,
                           alpha = 0.01, fill="grey60")
   } else {
-    p <- p %+% geom_point(size=point_size, pch=21, stroke=point_stroke) + scale_fill_manual(values = subgrp_colors)
+    p <- p %+% geom_point(size=point_size, pch=21, stroke=point_stroke) +
+               scale_fill_manual(values = subgrp_colors) +
+               scale_color_manual(values = subgrp_colors)
   }
 
   p + NULL
