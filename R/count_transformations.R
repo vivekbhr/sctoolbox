@@ -192,3 +192,37 @@ getGeneActivity <- function(mat, genes_gr, subset=NULL, overlapGap=10000){
   return(out)
 
 }
+
+
+#' Get top N highly variable features based on (analytic) pearson residuals
+#'
+#' @param mat sparse matrix (dgCMatrix) of raw counts
+#' @param top_n numeric, no. of high var features to fetch
+#' @param plot bool, whether to make mean-variance plot with highly variable features
+#'
+#' @return vector of rownames(mat)
+#' @export
+#'
+#' @examples
+#'
+#'
+getHVGs <- function(mat, top_n = 3000, plot = FALSE) {
+
+  log1p <- transformGamPoi::shifted_log_transform(mat, on_disk = TRUE)
+  pearsonres <- transformGamPoi::residual_transform(mat, on_disk = TRUE, residual_type = "analytic_pearson")
+
+  vardf <- data.frame(row.names = rownames(mat),
+                      mean = sparseMatrixStats::rowMeans2(log1p),
+                      var = sparseMatrixStats::rowVars(log1p),
+                      resvar = rowVars(as.matrix(pearsonres))
+                      )
+
+  vardf$hvg <- rank(-vardf$resvar, ties.method = "first") <= top_n
+
+  if(isTRUE(plot)) {
+    ggplot(vardf, aes(mean, var)) + geom_point(alpha=0.1) +
+      geom_point(data = vardf[vardf$hvg==TRUE, ], color="red", pch=21) +
+      scale_x_log10() + scale_y_log10() + theme_gray(base_size = 14) + NULL
+  }
+  return(vardf)
+}

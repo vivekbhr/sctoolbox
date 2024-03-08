@@ -8,4 +8,4 @@ Description: A collection of useful functions for single-cell (epi)-genomics and
 License: LGPL3
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.2.1
+RoxygenNote: 7.3.1
